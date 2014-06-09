@@ -1,4 +1,5 @@
 import core.thread;
+import std.array;
 import std.exception;
 import std.string;
 import std.stdio;
@@ -26,14 +27,13 @@ void main(string[] args)
   // TODO: same as above, struct or class ?
   void* req = zmq_socket(ctx, ZMQ_ROUTER);
   scope(exit) { zmq_close(req); }
-  // void* rec = zmq_socket(ctx, ZMQ_ROUTER);
-  // scope(exit) { zmq_close(rec); }
+  void* rec = zmq_socket(ctx, ZMQ_ROUTER);
+  scope(exit) { zmq_close(rec); }
 
   // ID needed when I want to receive messages back
   zmq_setsockopt(req, ZMQ_IDENTITY, my_endpoint.ptr, my_endpoint.length);
-
-  // zmq_setsockopt(rec, ZMQ_IDENTITY, toStringz(my_endpoint), my_endpoint.length);
-  // zmq_bind(rec, toStringz(my_endpoint));
+  zmq_setsockopt(rec, ZMQ_IDENTITY, my_endpoint.ptr, my_endpoint.length);
+  zmq_bind(rec, toStringz(my_endpoint));
 
   // Connect it
   zmq_connect(req, toStringz(endpoint));
@@ -69,10 +69,48 @@ void main(string[] args)
 
   // Thread.sleep(dur!("seconds")(1));
 
+  receive_message(rec);
+
+
+
   // zmq_disconnect(req, toStringz(endpoint));
 
   // Looks like a tuple, pack headers and pack body
   // So this should be good enough to simulate it
+
+}
+
+
+void receive_message(void* socket) {
+  zmq_msg_t request;
+  ubyte[][] frames;
+  ubyte[] frame;
+
+  // get the frames
+  do {
+    zmq_msg_init(&request);
+    scope(exit) { zmq_msg_close(&request); }
+
+    zmq_recvmsg(socket, &request, 0);
+    void* data = zmq_msg_data(&request);
+    auto size = zmq_msg_size(&request);
+
+    // hope that creates a copy of the data and appends NULL
+    frame = new ubyte[size + 1];
+    frame[0 .. size] = cast(ubyte[]) data[0 .. size];
+
+    frames ~= frame;
+  } while (zmq_msg_more(&request));
+
+  // trying to unpack the data and do something with it
+  auto u = unpack(frames[5]);
+  if (u.type == Value.type.map) {
+    writeln(u.as!(string[string])());
+  } if (u.type == Value.type.unsigned) {
+    writeln(u.via.uinteger);
+  } else {
+    writeln(u.value);
+  }
 
 }
 
