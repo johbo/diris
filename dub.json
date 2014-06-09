@@ -1,0 +1,10 @@
+{
+    "name": "diris",
+    "description": "Die Iris Experiment",
+    "copyright": "Copyright © 2014, Johannes Bornhold",
+    "authors": ["Johannes Bornhold"],
+    "dependencies": {
+        "msgpack-d": "~master",
+        "zeromq": "~master",
+    }
+}

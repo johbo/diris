@@ -1,0 +1,6 @@
+
+# project tool artifacts
+.dub
+
+# build artifacts
+/diris
