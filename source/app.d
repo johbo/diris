@@ -29,21 +29,7 @@ void main(string[] args)
   // Connect it
   zmq_connect(req, toStringz(endpoint));
 
-  // Prepare message and send it
-  // TODO: That looks ugly, moving bits and bytes around, should be somehow
-  // wrapped in a nice way
-  zmq_msg_t request;
-  zmq_msg_init_size(&request, 5);
-
-  ///memcpy (zmq_msg_data (&request), "Hello", 5);
-  ///Slicing calls memcpy internally.
-  immutable(void*) source = "Hello".ptr;
-
-  (zmq_msg_data(&request))[0..5] = source[0..5];
-
-  writeln("Client: Sending Hello");
-  zmq_sendmsg(req, &request, 0);
-  zmq_msg_close(&request);
+  send_message(req, "Hallo");
 
   /* Iris message format
 
@@ -65,9 +51,25 @@ void main(string[] args)
     "packed_headers",
     "packed_body"
   ];
+}
 
 
+void send_message(void* socket, string msg, int flags=0) {
+  // Prepare message and send it
+  // TODO: That looks ugly, moving bits and bytes around, should be somehow
+  // wrapped in a nice way
+  zmq_msg_t request;
+  zmq_msg_init_size(&request, msg.length);
 
+  ///memcpy (zmq_msg_data (&request), "Hello", 5);
+  ///Slicing calls memcpy internally.
+  immutable(void*) source = msg.ptr;
+  (zmq_msg_data(&request))[0..5] = source[0..5];
+
+  writeln("Client: Sending: ", msg);
+  zmq_sendmsg(socket, &request, flags);
+
+  zmq_msg_close(&request);
 }
 
 
