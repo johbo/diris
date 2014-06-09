@@ -64,6 +64,7 @@ void main(string[] args)
   send_message(req, Message.REQ, ZMQ_SNDMORE);
   send_message(req, "iris.ping", ZMQ_SNDMORE);
   send_message(req, empty, ZMQ_SNDMORE);
+  writeln("Sending payload 42");
   send_message(req, pack(["payload": 42]));
 
 
@@ -82,6 +83,28 @@ void main(string[] args)
 
 
 void receive_message(void* socket) {
+  ubyte[][] frames;
+  string msg_type;
+
+  do {
+    frames = receive_one_message(socket);
+    msg_type = cast(string) frames[2][0 .. $ - 1];
+    writeln("Got a message of type ", msg_type);
+  } while(msg_type != Message.REP);
+
+  // trying to unpack the data and do something with it
+  auto u = unpack(frames[5]);
+  if (u.type == Value.type.map) {
+    writeln(u.as!(string[string])());
+  } if (u.type == Value.type.unsigned) {
+    writeln("Response ", u.via.uinteger);
+  } else {
+    writeln(u.value);
+  }
+}
+
+
+ubyte[][] receive_one_message(void* socket) {
   zmq_msg_t request;
   ubyte[][] frames;
   ubyte[] frame;
@@ -102,16 +125,7 @@ void receive_message(void* socket) {
     frames ~= frame;
   } while (zmq_msg_more(&request));
 
-  // trying to unpack the data and do something with it
-  auto u = unpack(frames[5]);
-  if (u.type == Value.type.map) {
-    writeln(u.as!(string[string])());
-  } if (u.type == Value.type.unsigned) {
-    writeln(u.via.uinteger);
-  } else {
-    writeln(u.value);
-  }
-
+  return frames;
 }
 
 
