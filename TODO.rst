@@ -15,19 +15,23 @@ Needed:
 
 - [X] msgpack a structure
 
-- [ ] msgpack an iris structure
+- [X] msgpack an iris structure
 
 - [X] add zeromq as dependency
 
   easy thanks to `dub`
 
-- [ ] ZeroMQ - open tcp endpoint
+- [X] ZeroMQ - open tcp endpoint
 
-- [ ] send exampe structure iris.ping // echo.echo
+- [X] send example structure iris.ping // echo.echo
 
-- [ ] receive result
+- [X] receive result
+
+- [ ] verify result of "iris.ping"
 
 - [ ] create structure out of the result
+
+- [ ] listen for requests and react, support "iris.ping"
 
 - [ ] Zookeeper: discover a service
 
