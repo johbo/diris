@@ -104,11 +104,13 @@ void send_message(void* socket, ubyte[] msg, int flags=0) {
 
 struct Message {
 
-  enum ACK = "ACK",
+  enum {
+    ACK = "ACK",
     REP = "REP",
     REQ = "REQ",
     NACK = "NACK",
-    ERROR = "ERROR";
+    ERROR = "ERROR"
+  }
 }
 
 unittest {
