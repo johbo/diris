@@ -67,8 +67,7 @@ class Socket {
     return frames;
   }
 
-  // TODO: make it private!
-  void* _socket;
+  private void* _socket;
 
 }
 
