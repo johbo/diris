@@ -55,6 +55,18 @@ class Socket {
     return msg;
   }
 
+  ubyte[][] recv_multipart(int flags=0) {
+    ubyte[][] frames;
+    MsgFrame frame;
+
+    do {
+      frame = recv();
+      frames ~= frame.content();
+    } while (frame.more);
+
+    return frames;
+  }
+
   // TODO: make it private!
   void* _socket;
 

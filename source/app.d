@@ -100,17 +100,7 @@ void receive_message(Socket socket) {
 
 
 ubyte[][] receive_one_message(Socket socket) {
-  zmq_msg_t request;
-  ubyte[][] frames;
-  MsgFrame frame;
-
-  // get the frames
-  do {
-    frame = socket.recv();
-    frames ~= frame.content();
-  } while (frame.more);
-
-  return frames;
+  return socket.recv_multipart();
 }
 
 
