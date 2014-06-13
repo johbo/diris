@@ -45,6 +45,10 @@ class Socket {
     zmq_connect(_socket, toStringz(endpoint));
   }
 
+  void send(zmq_msg_t* msg, int flags=0) {
+    zmq_sendmsg(_socket, msg, flags);
+  }
+
   // TODO: make it private!
   void* _socket;
 

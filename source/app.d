@@ -49,8 +49,7 @@ void main(string[] args)
   */
 
   // First send the recipient ID, that's the one from the server
-  auto req = zreq._socket;
-  send_message(req, endpoint, ZMQ_SNDMORE);
+  send_message(zreq, endpoint, ZMQ_SNDMORE);
 
   // placeholder msgpack data
   auto p = Packer();
@@ -58,12 +57,12 @@ void main(string[] args)
   ubyte[] empty = p.stream.data.dup;
 
   // Next the iris message, trying out a ping
-  send_message(req, "dummy-message", ZMQ_SNDMORE);
-  send_message(req, Message.REQ, ZMQ_SNDMORE);
-  send_message(req, "iris.ping", ZMQ_SNDMORE);
-  send_message(req, empty, ZMQ_SNDMORE);
+  send_message(zreq, "dummy-message", ZMQ_SNDMORE);
+  send_message(zreq, Message.REQ, ZMQ_SNDMORE);
+  send_message(zreq, "iris.ping", ZMQ_SNDMORE);
+  send_message(zreq, empty, ZMQ_SNDMORE);
   writeln("Sending payload 42");
-  send_message(req, pack(["payload": 42]));
+  send_message(zreq, pack(["payload": 42]));
 
 
   auto rec = zrec._socket;
@@ -126,13 +125,13 @@ ubyte[][] receive_one_message(void* socket) {
 }
 
 
-void send_message(void* socket, string msg, int flags=0) {
+void send_message(Socket socket, string msg, int flags=0) {
   writeln("Client: Sending: ", msg);
   return send_message(socket, cast(ubyte[]) msg, flags);
 }
 
 
-void send_message(void* socket, ubyte[] msg, int flags=0) {
+void send_message(Socket socket, ubyte[] msg, int flags=0) {
   // Prepare message and send it
 
   // TODO: That looks ugly, moving bits and bytes around, should be somehow
@@ -145,7 +144,7 @@ void send_message(void* socket, ubyte[] msg, int flags=0) {
   void* source = msg.ptr;
   (zmq_msg_data(&request))[0 .. msg.length] = source[0 .. msg.length];
 
-  zmq_sendmsg(socket, &request, flags);
+  socket.send(&request, flags);
 
   zmq_msg_close(&request);
 }
