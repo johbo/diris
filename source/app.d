@@ -65,8 +65,7 @@ void main(string[] args)
   send_message(zreq, pack(["payload": 42]));
 
 
-  auto rec = zrec._socket;
-  receive_message(rec);
+  receive_message(zrec);
 
 
 
@@ -78,7 +77,7 @@ void main(string[] args)
 }
 
 
-void receive_message(void* socket) {
+void receive_message(Socket socket) {
   ubyte[][] frames;
   string msg_type;
 
@@ -100,7 +99,7 @@ void receive_message(void* socket) {
 }
 
 
-ubyte[][] receive_one_message(void* socket) {
+ubyte[][] receive_one_message(Socket socket) {
   zmq_msg_t request;
   ubyte[][] frames;
   ubyte[] frame;
@@ -110,7 +109,7 @@ ubyte[][] receive_one_message(void* socket) {
     zmq_msg_init(&request);
     scope(exit) { zmq_msg_close(&request); }
 
-    zmq_recvmsg(socket, &request, 0);
+    zmq_recvmsg(socket._socket, &request, 0);
     void* data = zmq_msg_data(&request);
     auto size = zmq_msg_size(&request);
 
