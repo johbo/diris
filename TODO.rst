@@ -36,3 +36,16 @@ Needed:
 - [ ] Zookeeper: discover a service
 
   At first, can put the tcp endpoint directly
+
+
+
+Check if a struct works
+=======================
+
+
+To manage resources either a `struct` or a `class` should work. Since a
+`struct` is destroyed more reliable, that might be the right thing to do as
+long as we do not pass it around by value.
+
+On the other side, a class would be a thing that has reference semantics and is
+passed around properly by default.

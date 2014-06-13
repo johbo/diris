@@ -7,6 +7,8 @@ import std.stdio;
 import deimos.zmq.zmq;
 import msgpack;
 
+import zmq;
+
 
 void main(string[] args)
 {
@@ -20,23 +22,18 @@ void main(string[] args)
 
   // TODO: should be wrapped in struct to handle it like a resource?
   // or a class?
-  void* ctx = zmq_ctx_new();
-  scope(exit) { zmq_ctx_destroy(ctx); }
+  auto zctx = new Context;
 
   // Create a socket
-  // TODO: same as above, struct or class ?
-  void* req = zmq_socket(ctx, ZMQ_ROUTER);
-  scope(exit) { zmq_close(req); }
-  void* rec = zmq_socket(ctx, ZMQ_ROUTER);
-  scope(exit) { zmq_close(rec); }
+  auto zreq = zctx.socket(ZMQ_ROUTER);
+  auto zrec = zctx.socket(ZMQ_ROUTER);
 
   // ID needed when I want to receive messages back
-  zmq_setsockopt(req, ZMQ_IDENTITY, my_endpoint.ptr, my_endpoint.length);
-  zmq_setsockopt(rec, ZMQ_IDENTITY, my_endpoint.ptr, my_endpoint.length);
-  zmq_bind(rec, toStringz(my_endpoint));
+  zreq.setsockopt(ZMQ_IDENTITY, my_endpoint);
+  zreq.connect(endpoint);
 
-  // Connect it
-  zmq_connect(req, toStringz(endpoint));
+  zrec.setsockopt(ZMQ_IDENTITY, my_endpoint);
+  zrec.bind(my_endpoint);
 
   // TODO: seems that it takes some time to connect
   Thread.sleep(dur!("msecs")(100));
@@ -52,6 +49,7 @@ void main(string[] args)
   */
 
   // First send the recipient ID, that's the one from the server
+  auto req = zreq._socket;
   send_message(req, endpoint, ZMQ_SNDMORE);
 
   // placeholder msgpack data
@@ -68,8 +66,7 @@ void main(string[] args)
   send_message(req, pack(["payload": 42]));
 
 
-  // Thread.sleep(dur!("seconds")(1));
-
+  auto rec = zrec._socket;
   receive_message(rec);
 
 
