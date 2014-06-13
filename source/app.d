@@ -82,7 +82,7 @@ void receive_message(Socket socket) {
   string msg_type;
 
   do {
-    frames = receive_one_message(socket);
+    frames = socket.recv_multipart();
     msg_type = cast(string) frames[2][0 .. $ - 1];
     writeln("Got a message of type ", msg_type);
   } while(msg_type != Message.REP);
@@ -96,11 +96,6 @@ void receive_message(Socket socket) {
   } else {
     writeln(u.value);
   }
-}
-
-
-ubyte[][] receive_one_message(Socket socket) {
-  return socket.recv_multipart();
 }
 
 
