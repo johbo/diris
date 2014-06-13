@@ -102,23 +102,13 @@ void receive_message(Socket socket) {
 ubyte[][] receive_one_message(Socket socket) {
   zmq_msg_t request;
   ubyte[][] frames;
-  ubyte[] frame;
+  MsgFrame frame;
 
   // get the frames
   do {
-    zmq_msg_init(&request);
-    scope(exit) { zmq_msg_close(&request); }
-
-    zmq_recvmsg(socket._socket, &request, 0);
-    void* data = zmq_msg_data(&request);
-    auto size = zmq_msg_size(&request);
-
-    // hope that creates a copy of the data and appends NULL
-    frame = new ubyte[size + 1];
-    frame[0 .. size] = cast(ubyte[]) data[0 .. size];
-
-    frames ~= frame;
-  } while (zmq_msg_more(&request));
+    frame = socket.recv();
+    frames ~= frame.content();
+  } while (frame.more);
 
   return frames;
 }

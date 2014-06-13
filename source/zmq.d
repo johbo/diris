@@ -49,9 +49,50 @@ class Socket {
     zmq_sendmsg(_socket, msg, flags);
   }
 
+  MsgFrame recv(int flags=0) {
+    auto msg = new MsgFrame;
+    msg.recv(this);
+    return msg;
+  }
+
   // TODO: make it private!
   void* _socket;
 
+}
+
+
+class MsgFrame {
+
+  this() {
+    zmq_msg_init(&_msg);
+  }
+
+  ~this() {
+    zmq_msg_close(&_msg);
+  }
+
+  void recv(Socket socket, int flags=0) {
+    zmq_recvmsg(socket._socket, &_msg, flags);
+  }
+
+  ubyte[] content() {
+    void* data = zmq_msg_data(&_msg);
+    size_t size = zmq_msg_size(&_msg);
+
+    // hope that creates a copy of the data and appends NULL
+    // TODO: not sure if the NULL at the end is really needed
+    auto frame = new ubyte[size + 1];
+    frame[0 .. size] = cast(ubyte[]) data[0 .. size];
+
+    return frame;
+  }
+
+  @property
+  bool more() {
+    return zmq_msg_more(&_msg) > 0;
+  }
+
+  private zmq_msg_t _msg;
 }
 
 
