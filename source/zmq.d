@@ -49,7 +49,9 @@ class Socket {
     zmq_sendmsg(_socket, &frame._msg, flags);
   }
 
-  void send(T)(T data, int flags=0) {
+  void send(T)(T data, int flags=0)
+    if (is(typeof(new MsgFrame(data))))
+  {
     this.send(new MsgFrame(data), flags);
   }
 
