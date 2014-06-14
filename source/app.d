@@ -107,20 +107,8 @@ void send_message(Socket socket, string msg, int flags=0) {
 
 void send_message(Socket socket, ubyte[] msg, int flags=0) {
   // Prepare message and send it
-
-  // TODO: That looks ugly, moving bits and bytes around, should be somehow
-  // wrapped in a nice way
-  zmq_msg_t request;
-  zmq_msg_init_size(&request, msg.length);
-
-  //memcpy (zmq_msg_data (&request), "Hello", 5);
-  //Slicing calls memcpy internally. (I hope)
-  void* source = msg.ptr;
-  (zmq_msg_data(&request))[0 .. msg.length] = source[0 .. msg.length];
-
-  socket.send(&request, flags);
-
-  zmq_msg_close(&request);
+  MsgFrame frame = new MsgFrame(msg);
+  frame.send(socket, flags);
 }
 
 

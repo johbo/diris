@@ -74,8 +74,18 @@ class Socket {
 
 class MsgFrame {
 
+  // TODO: Figure out if copying of the memory is really correct here
+
   this() {
     zmq_msg_init(&_msg);
+  }
+
+  this(ubyte[] msg) {
+    zmq_msg_init_size(&_msg, msg.length);
+    // memcpy (zmq_msg_data (&request), "Hello", 5);
+    // Slicing calls memcpy internally. (I hope)
+    void* source = msg.ptr;
+    (zmq_msg_data(&_msg))[0 .. msg.length] = source[0 .. msg.length];
   }
 
   ~this() {
@@ -84,6 +94,10 @@ class MsgFrame {
 
   void recv(Socket socket, int flags=0) {
     zmq_recvmsg(socket._socket, &_msg, flags);
+  }
+
+  void send(Socket socket, int flags=0) {
+    socket.send(&_msg, flags);
   }
 
   ubyte[] content() {
