@@ -49,7 +49,7 @@ void main(string[] args)
   */
 
   // First send the recipient ID, that's the one from the server
-  send_message(zreq, endpoint, ZMQ_SNDMORE);
+  zreq.send(endpoint, ZMQ_SNDMORE);
 
   // placeholder msgpack data
   auto p = Packer();
@@ -63,9 +63,6 @@ void main(string[] args)
   zreq.send(empty, ZMQ_SNDMORE);
   writeln("Sending payload 42");
   zreq.send(pack(["payload": 42]));
-
-  zreq.send(42);
-
 
   receive_message(zrec);
 
@@ -98,19 +95,6 @@ void receive_message(Socket socket) {
   } else {
     writeln(u.value);
   }
-}
-
-
-void send_message(Socket socket, string msg, int flags=0) {
-  writeln("Client: Sending: ", msg);
-  return send_message(socket, cast(ubyte[]) msg, flags);
-}
-
-
-void send_message(Socket socket, ubyte[] msg, int flags=0) {
-  // Prepare message and send it
-  MsgFrame frame = new MsgFrame(msg);
-  socket.send(frame, flags);
 }
 
 
