@@ -45,8 +45,12 @@ class Socket {
     zmq_connect(_socket, toStringz(endpoint));
   }
 
-  void send(zmq_msg_t* msg, int flags=0) {
-    zmq_sendmsg(_socket, msg, flags);
+  void send(MsgFrame frame, int flags=0) {
+    zmq_sendmsg(_socket, &frame._msg, flags);
+  }
+
+  void send(T)(T data, int flags=0) {
+    this.send(new MsgFrame(data), flags);
   }
 
   MsgFrame recv(int flags=0) {
@@ -88,6 +92,10 @@ class MsgFrame {
     (zmq_msg_data(&_msg))[0 .. msg.length] = source[0 .. msg.length];
   }
 
+  this(string msg) {
+    this(cast(ubyte[]) msg);
+  }
+
   ~this() {
     zmq_msg_close(&_msg);
   }
@@ -97,7 +105,7 @@ class MsgFrame {
   }
 
   void send(Socket socket, int flags=0) {
-    socket.send(&_msg, flags);
+    socket.send(this, flags);
   }
 
   ubyte[] content() {

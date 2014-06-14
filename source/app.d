@@ -57,12 +57,14 @@ void main(string[] args)
   ubyte[] empty = p.stream.data.dup;
 
   // Next the iris message, trying out a ping
-  send_message(zreq, "dummy-message", ZMQ_SNDMORE);
-  send_message(zreq, Message.REQ, ZMQ_SNDMORE);
-  send_message(zreq, "iris.ping", ZMQ_SNDMORE);
-  send_message(zreq, empty, ZMQ_SNDMORE);
+  zreq.send("dummy-message", ZMQ_SNDMORE);
+  zreq.send(Message.REQ, ZMQ_SNDMORE);
+  zreq.send("iris.ping", ZMQ_SNDMORE);
+  zreq.send(empty, ZMQ_SNDMORE);
   writeln("Sending payload 42");
-  send_message(zreq, pack(["payload": 42]));
+  zreq.send(pack(["payload": 42]));
+
+  zreq.send(42);
 
 
   receive_message(zrec);
@@ -108,7 +110,7 @@ void send_message(Socket socket, string msg, int flags=0) {
 void send_message(Socket socket, ubyte[] msg, int flags=0) {
   // Prepare message and send it
   MsgFrame frame = new MsgFrame(msg);
-  frame.send(socket, flags);
+  socket.send(frame, flags);
 }
 
 
